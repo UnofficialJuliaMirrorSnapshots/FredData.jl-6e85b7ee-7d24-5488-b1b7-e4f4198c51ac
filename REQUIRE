@@ -1,0 +1,6 @@
+julia 0.4
+DataFrames
+JSON
+Requests
+TimeZones 0.1.3
+Compat 0.7.9
