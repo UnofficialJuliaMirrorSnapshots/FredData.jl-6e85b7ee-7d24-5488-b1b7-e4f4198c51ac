@@ -74,14 +74,12 @@ function get_data(f::Fred, series::AbstractString; kwargs...)
             metadata_parsed[Symbol(k)] = metadata_json["seriess"][1][k]
         catch err
             metadata_parsed[Symbol(k)] = ""
-            warn("Metadata '$k' not returned from server.")
+            @warn("Metadata '$k' not returned from server.")
         end
     end
 
-    # the last three chars are -05, for CST in St. Louis
     function parse_last_updated(last_updated)
-        timezone = last_updated[end-2:end]  # TODO
-        return DateTime(last_updated[1:end-3], "yyyy-mm-dd HH:MM:SS")
+        return DateTime(astimezone(ZonedDateTime(last_updated, FRED_DATE_FORMAT), OUTPUT_TZ))
     end
     last_updated = parse_last_updated(
         metadata_json["seriess"][1]["last_updated"])
@@ -174,14 +172,14 @@ function validate_args!(kwargs)
         end
         vds_early = map(x -> x<EARLY_VINTAGE_DATE, vds_arr)
         if any(vds_early)
-            warn(:vintage_dates, ": Early vintage date, data might not exist: ",
+            @warn(:vintage_dates, ": Early vintage date, data might not exist: ",
                 vds_arr[vds_early])
         end
     end
     # all remaining keys have unspecified behavior
     if length(d) > 0
         for k in keys(d)
-            warn(string(k), ": Bad key. Removed from query.")
+            @warn(string(k), ": Bad key. Removed from query.")
             deleteat!(kwargs, findall(x -> x[1]==k, kwargs))
         end
     end
